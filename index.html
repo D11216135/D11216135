@@ -307,6 +307,12 @@
         let gameOver = false;
         let dealerHiddenCard = null;
 
+        // 遊戲常數
+        const MIN_DECK_SIZE = 6;           // 最少剩餘牌數，少於此數自動洗牌
+        const RESHUFFLE_THRESHOLD = 20;    // 開始新局時若牌少於此數則洗牌
+        const DEALER_REVEAL_DELAY = 500;   // 莊家翻牌延遲（毫秒）
+        const DEALER_CARD_DELAY = 600;     // 莊家補牌間隔（毫秒）
+
         // 撲克牌花色和點數
         const suits = ['♠', '♥', '♦', '♣'];
         const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -432,7 +438,7 @@
 
         // 發牌給玩家或莊家
         function dealCard(hand) {
-            if (deck.length < 6) {
+            if (deck.length < MIN_DECK_SIZE) {
                 // 牌不夠時重新洗牌
                 deck = shuffleDeck(createDeck());
                 showMessage('牌組不足，重新洗牌...');
@@ -458,7 +464,7 @@
             dealerHiddenCard = null;
 
             // 創建並洗牌
-            if (deck.length < 20) {
+            if (deck.length < RESHUFFLE_THRESHOLD) {
                 deck = shuffleDeck(createDeck());
             }
 
@@ -534,7 +540,7 @@
             // 莊家補牌（補到至少 17 點）
             setTimeout(() => {
                 dealerPlay();
-            }, 500);
+            }, DEALER_REVEAL_DELAY);
         }
 
         // 莊家行為
@@ -552,7 +558,7 @@
                     clearInterval(dealerDrawInterval);
                     determineWinner();
                 }
-            }, 600);
+            }, DEALER_CARD_DELAY);
         }
 
         // 判定勝負
