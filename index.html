@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易塔羅抽牌</title>
+    <style>
+        /* 全域樣式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header 區域 */
+        header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #764ba2;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        label {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        select {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            border-color: #764ba2;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .draw-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .draw-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .draw-button:active {
+            transform: translateY(0);
+        }
+
+        .reset-button {
+            background: #6c757d;
+            color: white;
+        }
+
+        .reset-button:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:focus {
+            outline: 3px solid rgba(118, 75, 162, 0.5);
+            outline-offset: 2px;
+        }
+
+        /* 卡片顯示區域 */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(30px) rotateX(90deg);
+            animation: cardAppear 0.6s ease forwards;
+        }
+
+        @keyframes cardAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.5s; }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .card-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 5px;
+        }
+
+        .card-arcana {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .card-orientation {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .upright {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .reversed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .card-image {
+            text-align: center;
+            margin: 20px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+            font-size: 3rem;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        /* 結果摘要區 */
+        .summary {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .summary.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .summary h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .summary-text {
+            color: #444;
+            line-height: 1.8;
+        }
+
+        /* Footer 區域 */
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 空狀態提示 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+
+            .card-name {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            header, .control-panel, footer {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🔮 簡易塔羅抽牌</h1>
+            <p class="subtitle">探索內心的智慧，透過塔羅獲得啟發與反思</p>
+        </header>
+
+        <!-- 控制面板 -->
+        <section class="control-panel">
+            <div class="control-group">
+                <label for="card-count">抽牌數量：</label>
+                <select id="card-count" aria-label="選擇抽牌數量">
+                    <option value="1">1 張</option>
+                    <option value="2">2 張</option>
+                    <option value="3">3 張</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button class="draw-button" id="draw-button" aria-label="開始抽牌">
+                    ✨ 開始抽牌
+                </button>
+                <button class="reset-button" id="reset-button" aria-label="重置抽牌">
+                    🔄 重置
+                </button>
+            </div>
+        </section>
+
+        <!-- 卡片顯示區域 -->
+        <div id="cards-display">
+            <div class="empty-state">
+                <div class="empty-state-icon">🃏</div>
+                <p class="empty-state-text">請選擇抽牌數量，然後點擊「開始抽牌」</p>
+            </div>
+        </div>
+
+        <!-- 結果摘要 -->
+        <section class="summary" id="summary">
+            <h2>📖 抽牌解讀</h2>
+            <div class="summary-text" id="summary-text"></div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p><strong>版本：</strong>1.0 | <strong>日期：</strong>2025-12-12</p>
+            <p>由 Jia0818 製作 | 單一檔案應用，可離線使用</p>
+            <p>本應用不收集任何使用者資料，所有操作均在本地執行</p>
+        </footer>
+    </div>
+
+    <script>
+        // 塔羅牌資料庫
+        const tarotDeck = [
+            {
+                id: "major_0",
+                name: "愚者",
+                arcana: "大阿爾克那",
+                number: 0,
+                upright: "新的開始；無畏、純真、冒險。代表著踏上未知旅程的勇氣，以開放的心態面對人生。",
+                reversed: "衝動、猶豫不前、缺乏計畫。可能表示過於魯莽或因恐懼而止步不前。",
+                symbol: "🌟"
+            },
+            {
+                id: "major_1",
+                name: "魔術師",
+                arcana: "大阿爾克那",
+                number: 1,
+                upright: "創造力、技能、顯化能力。擁有將想法化為現實的力量與資源。",
+                reversed: "操控、欺騙、濫用才能。可能暗示缺乏專注或誤用能力。",
+                symbol: "✨"
+            },
+            {
+                id: "major_6",
+                name: "戀人",
+                arcana: "大阿爾克那",
+                number: 6,
+                upright: "愛情、和諧、選擇。代表深刻的連結與重要的人生抉擇。",
+                reversed: "不和諧、選擇困難、失去平衡。可能表示關係中的衝突或價值觀分歧。",
+                symbol: "💕"
+            },
+            {
+                id: "major_13",
+                name: "死神",
+                arcana: "大阿爾克那",
+                number: 13,
+                upright: "轉變、結束、重生。象徵舊事物的結束與新開始的到來。",
+                reversed: "抗拒改變、停滯、執著過去。可能顯示難以放下或害怕轉變。",
+                symbol: "🌙"
+            },
+            {
+                id: "major_20",
+                name: "審判",
+                arcana: "大阿爾克那",
+                number: 20,
+                upright: "覺醒、反省、重生。呼喚內在的覺察與對過往的評估。",
+                reversed: "自我懷疑、拒絕反省、內疚。可能表示過度批判自己或逃避責任。",
+                symbol: "⚖️"
+            },
+            {
+                id: "major_4",
+                name: "皇帝",
+                arcana: "大阿爾克那",
+                number: 4,
+                upright: "權威、結構、掌控。代表穩定的領導力與建立秩序的能力。",
+                reversed: "專制、控制過度、僵化。可能暗示權力的濫用或缺乏彈性。",
+                symbol: "👑"
+            },
+            {
+                id: "major_3",
+                name: "皇后",
+                arcana: "大阿爾克那",
+                number: 3,
+                upright: "豐饒、養育、美麗。象徵創造力的綻放與母性的關愛。",
+                reversed: "依賴、窒息的愛、創意受阻。可能表示過度保護或忽視自我照顧。",
+                symbol: "🌺"
+            },
+            {
+                id: "wands_1",
+                name: "權杖一",
+                arcana: "小阿爾克那",
+                suit: "權杖",
+                number: 1,
+                upright: "靈感、新計畫、創造力爆發。代表充滿熱情的新開始。",
+                reversed: "延遲、缺乏方向、創意受阻。可能顯示計畫受挫或失去動力。",
+                symbol: "🔥"
+            },
+            {
+                id: "cups_3",
+                name: "聖杯三",
+                arcana: "小阿爾克那",
+                suit: "聖杯",
+                number: 3,
+                upright: "慶祝、友誼、社交。象徵歡樂的聚會與情感的分享。",
+                reversed: "過度放縱、社交問題、獨處。可能暗示關係中的不平衡或孤立感。",
+                symbol: "🍷"
+            },
+            {
+                id: "swords_2",
+                name: "寶劍二",
+                arcana: "小阿爾克那",
+                suit: "寶劍",
+                number: 2,
+                upright: "困難的選擇、僵局、權衡。需要在兩個選項間做出艱難決定。",
+                reversed: "猶豫不決、資訊不足、混亂。可能表示逃避決定或被情緒主導。",
+                symbol: "⚔️"
+            }
+        ];
+
+        // Fisher-Yates 洗牌算法
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // 抽牌功能
+        function drawCards(count) {
+            const shuffled = shuffleArray(tarotDeck);
+            const drawn = shuffled.slice(0, count);
+            
+            // 為每張牌決定是否逆位 (50% 機率)
+            return drawn.map(card => ({
+                ...card,
+                isReversed: Math.random() < 0.5
+            }));
+        }
+
+        // 渲染卡片
+        function renderCards(cards) {
+            const cardsDisplay = document.getElementById('cards-display');
+            const summary = document.getElementById('summary');
+            const summaryText = document.getElementById('summary-text');
+            
+            if (cards.length === 0) {
+                cardsDisplay.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🃏</div>
+                        <p class="empty-state-text">請選擇抽牌數量，然後點擊「開始抽牌」</p>
+                    </div>
+                `;
+                summary.classList.remove('show');
+                return;
+            }
+
+            // 渲染卡片
+            const cardsHTML = cards.map(card => {
+                const orientation = card.isReversed ? 'reversed' : 'upright';
+                const orientationText = card.isReversed ? '逆位' : '正位';
+                const description = card.isReversed ? card.reversed : card.upright;
+                
+                return `
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-name">${card.name}</div>
+                            <div class="card-arcana">${card.arcana}</div>
+                            <span class="card-orientation ${orientation}">${orientationText}</span>
+                        </div>
+                        <div class="card-image" aria-label="卡片圖像">
+                            ${card.symbol}
+                        </div>
+                        <div class="card-description">
+                            ${description}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            cardsDisplay.innerHTML = `<div class="cards-container">${cardsHTML}</div>`;
+
+            // 生成摘要
+            let summaryHTML = '<p>';
+            cards.forEach((card, index) => {
+                const orientationText = card.isReversed ? '逆位' : '正位';
+                const description = card.isReversed ? card.reversed : card.upright;
+                summaryHTML += `<strong>${index + 1}. ${card.name}（${orientationText}）：</strong>${description}<br><br>`;
+            });
+            summaryHTML += '</p>';
+
+            if (cards.length === 1) {
+                summaryHTML += '<p><em>單張牌提示：專注於當下的這個訊息，深入思考它對你的意義。</em></p>';
+            } else if (cards.length === 2) {
+                summaryHTML += '<p><em>兩張牌建議：第一張代表現況或挑戰，第二張代表建議或未來方向。</em></p>';
+            } else if (cards.length === 3) {
+                summaryHTML += '<p><em>三張牌牌陣：第一張代表過去或根源，第二張代表現在或挑戰，第三張代表未來或建議。</em></p>';
+            }
+
+            summaryText.innerHTML = summaryHTML;
+            summary.classList.add('show');
+        }
+
+        // 事件監聽
+        document.getElementById('draw-button').addEventListener('click', () => {
+            const count = parseInt(document.getElementById('card-count').value);
+            const cards = drawCards(count);
+            renderCards(cards);
+        });
+
+        document.getElementById('reset-button').addEventListener('click', () => {
+            renderCards([]);
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCards([]);
+        });
+    </script>
+</body>
+</html>
