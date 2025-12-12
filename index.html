@@ -582,21 +582,6 @@
             renderCards([]);
         });
 
-        // 鍵盤支援
-        document.getElementById('draw-button').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                document.getElementById('draw-button').click();
-            }
-        });
-
-        document.getElementById('reset-button').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                document.getElementById('reset-button').click();
-            }
-        });
-
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             renderCards([]);
